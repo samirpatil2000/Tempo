@@ -53,7 +53,7 @@ struct ExportButtonView: View {
     
     private var estimatedDuration: String? {
         guard let originalDuration = appState.videoInfo?.duration else { return nil }
-        let newDuration = originalDuration / appState.speedMultiplier.rawValue
+        let newDuration = originalDuration / appState.speedMultiplier
         let minutes = Int(newDuration) / 60
         let seconds = Int(newDuration) % 60
         return String(format: "%d:%02d", minutes, seconds)
@@ -61,7 +61,7 @@ struct ExportButtonView: View {
     
     private var estimatedSize: String? {
         guard let duration = appState.videoInfo?.duration else { return nil }
-        let adjustedDuration = duration / appState.speedMultiplier.rawValue
+        let adjustedDuration = duration / appState.speedMultiplier
         let bitrate = appState.targetResolution.bitrate
         let sizeBytes = Double(bitrate) * adjustedDuration / 8
         let sizeMB = sizeBytes / 1_000_000
@@ -111,15 +111,15 @@ struct ExportButtonView: View {
             // Circular progress
             ZStack {
                 Circle()
-                    .stroke(AppColors.segmentBackground, lineWidth: 4)
-                    .frame(width: 56, height: 56)
+                .stroke(AppColors.segmentBackground, lineWidth: 4)
+                .frame(width: 56, height: 56)
                 
                 Circle()
-                    .trim(from: 0, to: appState.exportProgress)
-                    .stroke(AppColors.accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                    .frame(width: 56, height: 56)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.linear(duration: 0.1), value: appState.exportProgress)
+                .trim(from: 0, to: appState.exportProgress)
+                .stroke(AppColors.accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .frame(width: 56, height: 56)
+                .rotationEffect(.degrees(-90))
+                .animation(.linear(duration: 0.1), value: appState.exportProgress)
                 
                 Text("\(Int(appState.exportProgress * 100))%")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -234,7 +234,7 @@ struct ExportButtonView: View {
         let newProcessor = VideoProcessor(
             inputURL: videoInfo.url,
             outputURL: outputURL,
-            speed: appState.speedMultiplier.rawValue,
+            speed: appState.speedMultiplier,
             targetResolution: appState.targetResolution
         )
         processor = newProcessor
@@ -263,8 +263,17 @@ struct ExportButtonView: View {
     
     private func generateOutputFilename(from original: String) -> String {
         let baseName = (original as NSString).deletingPathExtension
-        let speed = appState.speedMultiplier.label.replacingOccurrences(of: "×", with: "x")
+        
+        // Format speed string clean: "1x", "1.5x", etc
+        let speed = appState.speedMultiplier
+        let speedString: String
+        if floor(speed) == speed {
+            speedString = String(format: "%.0fx", speed)
+        } else {
+            speedString = String(format: "%.2fx", speed)
+        }
+        
         let resolution = appState.targetResolution.rawValue
-        return "\(baseName)_\(speed)_\(resolution).mp4"
+        return "\(baseName)_\(speedString)_\(resolution).mp4"
     }
 }

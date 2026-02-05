@@ -1,10 +1,10 @@
 import SwiftUI
 import AVFoundation
-
+// Support for macos 12+ 
 @MainActor
 class AppState: ObservableObject {
     @Published var videoInfo: VideoInfo?
-    @Published var speedMultiplier: SpeedMultiplier = .x1
+    @Published var speedMultiplier: Double = 1.0
     @Published var targetResolution: Resolution = .original
     @Published var exportProgress: Double = 0
     @Published var exportState: ExportState = .idle
@@ -45,7 +45,7 @@ class AppState: ObservableObject {
     
     func reset() {
         videoInfo = nil
-        speedMultiplier = .x1
+        speedMultiplier = 1.0
         targetResolution = .original
         exportProgress = 0
         exportState = .idle
