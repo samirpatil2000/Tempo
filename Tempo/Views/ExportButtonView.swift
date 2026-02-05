@@ -3,17 +3,19 @@ import SwiftUI
 struct ExportButtonView: View {
     @EnvironmentObject var appState: AppState
     @State private var processor: VideoProcessor?
+    @State private var isPressed = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            Divider()
-                .opacity(0.5)
-                .padding(.bottom, 20)
-            
+        VStack(spacing: 12) {
             content
+            
+            // Microcopy
+            if appState.exportState == .idle, appState.videoInfo != nil {
+                estimatedInfo
+            }
         }
         .frame(maxWidth: .infinity)
-        .animation(.easeInOut(duration: 0.2), value: appState.exportState)
+        .animation(AppAnimations.smooth, value: appState.exportState)
     }
     
     @ViewBuilder
@@ -33,112 +35,186 @@ struct ExportButtonView: View {
         }
     }
     
+    // MARK: - Estimated Info
+    
+    private var estimatedInfo: some View {
+        HStack(spacing: 6) {
+            if let duration = estimatedDuration {
+                Text("Duration: \(duration)")
+            }
+            if let size = estimatedSize {
+                Text("•")
+                Text("~\(size)")
+            }
+        }
+        .font(.system(size: 11, weight: .regular))
+        .foregroundStyle(AppColors.textTertiary)
+    }
+    
+    private var estimatedDuration: String? {
+        guard let originalDuration = appState.videoInfo?.duration else { return nil }
+        let newDuration = originalDuration / appState.speedMultiplier.rawValue
+        let minutes = Int(newDuration) / 60
+        let seconds = Int(newDuration) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    private var estimatedSize: String? {
+        guard let duration = appState.videoInfo?.duration else { return nil }
+        let adjustedDuration = duration / appState.speedMultiplier.rawValue
+        let bitrate = appState.targetResolution.bitrate
+        let sizeBytes = Double(bitrate) * adjustedDuration / 8
+        let sizeMB = sizeBytes / 1_000_000
+        
+        if sizeMB < 1 {
+            return String(format: "%.0f KB", sizeBytes / 1000)
+        } else if sizeMB >= 1000 {
+            return String(format: "%.1f GB", sizeMB / 1000)
+        }
+        return String(format: "%.0f MB", sizeMB)
+    }
+    
     // MARK: - Export Button
     
     private var exportButton: some View {
         Button(action: startExport) {
-            Text("Export Video")
-                .font(.system(size: 14, weight: .semibold, design: .default))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(appState.canExport ? AppColors.accent : Color.primary.opacity(0.1))
-                )
+            HStack(spacing: 8) {
+                Text("Export Video")
+                    .font(.system(size: 15, weight: .semibold))
+                
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(appState.canExport ? AppColors.accent : AppColors.textTertiary)
+            )
+            .shadow(color: appState.canExport ? AppColors.accentGlow : .clear, radius: isPressed ? 4 : 12, y: isPressed ? 2 : 4)
+            .scaleEffect(isPressed ? 0.97 : 1.0)
         }
         .buttonStyle(.plain)
         .disabled(!appState.canExport)
-        .scaleEffect(appState.canExport ? 1.0 : 1.0) // No scale on disable
+        .onLongPressGesture(minimumDuration: 0, pressing: { pressing in
+            withAnimation(AppAnimations.quick) {
+                isPressed = pressing
+            }
+        }, perform: {})
     }
     
     // MARK: - Progress View
     
     private var progressView: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Exporting...")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.primary)
+        VStack(spacing: 16) {
+            // Circular progress
+            ZStack {
+                Circle()
+                    .stroke(AppColors.segmentBackground, lineWidth: 4)
+                    .frame(width: 56, height: 56)
                 
-                Spacer()
+                Circle()
+                    .trim(from: 0, to: appState.exportProgress)
+                    .stroke(AppColors.accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .frame(width: 56, height: 56)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.linear(duration: 0.1), value: appState.exportProgress)
                 
                 Text("\(Int(appState.exportProgress * 100))%")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppColors.textPrimary)
                     .monospacedDigit()
             }
             
-            // Minimalist Progress Bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.primary.opacity(0.1))
-                        .frame(height: 4)
-                    
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(AppColors.accent)
-                        .frame(width: geometry.size.width * appState.exportProgress, height: 4)
-                        .animation(.easeInOut(duration: 0.1), value: appState.exportProgress)
-                }
-            }
-            .frame(height: 4)
+            Text("Exporting...")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(AppColors.textSecondary)
             
             Button("Cancel") {
                 cancelExport()
             }
-            .buttonStyle(.plain)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(Color.secondary)
-            .padding(.top, 4)
+            .foregroundStyle(AppColors.textTertiary)
+            .buttonStyle(.plain)
         }
+        .padding(.vertical, 8)
     }
     
     // MARK: - Completion View
     
     private func completionView(url: URL) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(AppColors.success.opacity(0.15))
+                    .frame(width: 48, height: 48)
+                
+                Image(systemName: "checkmark")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(AppColors.success)
+            }
+            
             Text("Export Complete")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(AppColors.success)
+                .foregroundStyle(AppColors.textPrimary)
             
-            HStack(spacing: 16) {
+            HStack(spacing: 20) {
                 Button {
                     NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
                 } label: {
                     Text("Show in Finder")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(AppColors.accent)
                 }
-                .buttonStyle(LinkButtonStyle())
+                .buttonStyle(.plain)
                 
                 Button {
                     appState.exportState = .idle
                     appState.exportProgress = 0
                 } label: {
-                    Text("New Export")
+                    Text("Done")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(AppColors.textSecondary)
                 }
-                .buttonStyle(LinkButtonStyle())
+                .buttonStyle(.plain)
             }
         }
+        .padding(.vertical, 8)
     }
     
     // MARK: - Error View
     
     private func errorView(message: String) -> some View {
         VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(AppColors.error.opacity(0.15))
+                    .frame(width: 48, height: 48)
+                
+                Image(systemName: "xmark")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(AppColors.error)
+            }
+            
             Text("Export Failed")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(AppColors.error)
+                .foregroundStyle(AppColors.textPrimary)
             
             Text(message)
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .font(.system(size: 11))
+                .foregroundStyle(AppColors.textTertiary)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
             
             Button("Try Again") {
                 appState.exportState = .idle
             }
-            .buttonStyle(LinkButtonStyle())
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(AppColors.accent)
+            .buttonStyle(.plain)
         }
+        .padding(.vertical, 8)
     }
     
     // MARK: - Actions
@@ -190,14 +266,5 @@ struct ExportButtonView: View {
         let speed = appState.speedMultiplier.label.replacingOccurrences(of: "×", with: "x")
         let resolution = appState.targetResolution.rawValue
         return "\(baseName)_\(speed)_\(resolution).mp4"
-    }
-}
-
-struct LinkButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(AppColors.accent)
-            .opacity(configuration.isPressed ? 0.7 : 1.0)
     }
 }

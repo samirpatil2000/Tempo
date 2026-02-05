@@ -6,29 +6,21 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            HStack {
-                Text("Tempo")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
-                
-                Spacer()
-            }
-            .padding(.bottom, 24)
+            header
+                .padding(.bottom, 24)
             
-            // Drop Zone
+            // Media Info Card
             DropZoneView()
-            
-            Spacer().frame(height: 32)
+                .padding(.bottom, 28)
             
             // Controls - Only show when video is loaded
             if appState.videoInfo != nil {
-                VStack(spacing: 28) {
+                VStack(spacing: 24) {
                     SpeedSelectorView()
                     ResolutionSelectorView()
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
-                
-                Spacer().frame(height: 32)
+                .padding(.bottom, 28)
             }
             
             Spacer()
@@ -37,9 +29,37 @@ struct ContentView: View {
             ExportButtonView()
         }
         .padding(32)
-        .frame(width: 440, height: 500)
-        .background(AppColors.background)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: appState.videoInfo != nil)
+        .frame(width: 420, height: 520)
+        .background(AppColors.surfaceElevated)
+        .animation(AppAnimations.smooth, value: appState.videoInfo != nil)
+    }
+    
+    // MARK: - Header
+    
+    private var header: some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Export Video")
+                    .font(.system(size: 22, weight: .semibold, design: .default))
+                    .foregroundStyle(AppColors.textPrimary)
+                
+                Text("Tempo")
+                    .font(.system(size: 12, weight: .medium, design: .default))
+                    .foregroundStyle(AppColors.textTertiary)
+            }
+            
+            Spacer()
+            
+            // App icon placeholder
+            Image(systemName: "film.stack")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(AppColors.accent.opacity(0.8))
+                .frame(width: 36, height: 36)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(AppColors.segmentBackground)
+                )
+        }
     }
 }
 

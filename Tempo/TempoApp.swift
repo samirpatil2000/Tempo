@@ -8,8 +8,8 @@ struct TempoApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
-                .frame(width: 480, height: 520)
         }
         .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
     }
 }

@@ -1,118 +1,138 @@
 import SwiftUI
 
+// MARK: - Speed Selector
+
 struct SpeedSelectorView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Text("SPEED")
-                    .font(.system(size: 11, weight: .medium, design: .default))
-                    .foregroundStyle(Color.secondary.opacity(0.8))
-
+        VStack(alignment: .leading, spacing: 10) {
+            // Segmented Control
+            SegmentedControl(
+                items: SpeedMultiplier.allCases,
+                selection: $appState.speedMultiplier,
+                label: \.label
+            )
+            
+            // Helper text with duration
+            HStack(spacing: 4) {
+                Text("Playback speed")
+                    .foregroundStyle(AppColors.textTertiary)
                 
                 if let duration = formattedDuration {
-                    Text("— \(duration)")
-                        .font(.system(size: 11, weight: .regular, design: .default))
-                        .foregroundStyle(Color.secondary.opacity(0.6))
-                        .transition(.opacity)
+                    Text("•")
+                        .foregroundStyle(AppColors.textTertiary)
+                    Text(duration)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
             }
-            .padding(.leading, 2)
-            
-            HStack(spacing: 12) {
-                ForEach(SpeedMultiplier.allCases) { speed in
-                    MinimalistPillButton(
-                        title: speed.label,
-                        isSelected: appState.speedMultiplier == speed
-                    ) {
-                        playSound(type: .selection)
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            appState.speedMultiplier = speed
-                        }
-                    }
-                }
-            }
+            .font(.system(size: 11, weight: .regular))
+            .padding(.leading, 4)
         }
     }
     
     private var formattedDuration: String? {
         guard let originalDuration = appState.videoInfo?.duration else { return nil }
         let newDuration = originalDuration / appState.speedMultiplier.rawValue
-        
         let minutes = Int(newDuration) / 60
         let seconds = Int(newDuration) % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
 }
 
+// MARK: - Resolution Selector
+
 struct ResolutionSelectorView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("QUALITY")
-                .font(.system(size: 11, weight: .medium, design: .default))
-                .foregroundStyle(Color.secondary.opacity(0.8))
-
+        VStack(alignment: .leading, spacing: 10) {
+            // Segmented Control
+            SegmentedControl(
+                items: Resolution.allCases,
+                selection: $appState.targetResolution,
+                label: \.rawValue,
+                recommendedItem: .p1080
+            )
             
-            HStack(spacing: 12) {
-                ForEach(Resolution.allCases) { resolution in
-                    MinimalistPillButton(
-                        title: resolution.rawValue,
-                        isSelected: appState.targetResolution == resolution
-                    ) {
-                        playSound(type: .selection)
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            appState.targetResolution = resolution
-                        }
-                    }
-                }
-            }
+            // Helper text
+            Text("Export quality")
+                .font(.system(size: 11, weight: .regular))
+                .foregroundStyle(AppColors.textTertiary)
+                .padding(.leading, 4)
         }
     }
 }
 
-// MARK: - Minimalist Pill Button
+// MARK: - Apple-Style Segmented Control
 
-struct MinimalistPillButton: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
+struct SegmentedControl<T: Hashable & Identifiable>: View {
+    let items: [T]
+    @Binding var selection: T
+    let label: (T) -> String
+    var recommendedItem: T? = nil
+    
+    @Namespace private var namespace
+    @State private var pressedItem: T? = nil
     
     var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 14, weight: isSelected ? .medium : .regular, design: .default))
-                .foregroundStyle(isSelected ? .white : Color.primary.opacity(0.6))
-                .frame(maxWidth: .infinity)
-                .frame(height: 36)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(isSelected ? AppColors.accent : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(
-                            isSelected ? Color.clear : Color.primary.opacity(0.1),
-                            lineWidth: 1
-                        )
-                )
-                .scaleEffect(isSelected ? 0.98 : 1.0)
+        HStack(spacing: 4) {
+            ForEach(items) { item in
+                segmentButton(for: item)
+            }
+        }
+        .padding(4)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(AppColors.segmentBackground)
+        )
+    }
+    
+    private func segmentButton(for item: T) -> some View {
+        let isSelected = selection.id == item.id
+        let isPressed = pressedItem?.id == item.id
+        let isRecommended = recommendedItem?.id == item.id && !isSelected
+        
+        return Button {
+            withAnimation(AppAnimations.quick) {
+                selection = item
+            }
+            playHaptic()
+        } label: {
+            HStack(spacing: 4) {
+                Text(label(item))
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                
+                if isRecommended {
+                    Text("★")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(AppColors.accent.opacity(0.7))
+                }
+            }
+            .foregroundStyle(isSelected ? .white : AppColors.textSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 36)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(AppColors.accent)
+                        .shadow(color: AppColors.accentGlow, radius: 8, y: 2)
+                        .matchedGeometryEffect(id: "selection", in: namespace)
+                }
+            }
+            .scaleEffect(isPressed ? 0.96 : 1.0)
         }
         .buttonStyle(.plain)
+        .onLongPressGesture(minimumDuration: 0, pressing: { pressing in
+            withAnimation(AppAnimations.quick) {
+                pressedItem = pressing ? item : nil
+            }
+        }, perform: {})
     }
-}
-
-// MARK: - Haptic Helper
-private enum SoundType {
-    case selection
-}
-
-private func playSound(type: SoundType) {
-    // macOS buttons usually have subtle clicks by default, but we can enforce logic here if needed.
-    // NSHapticFeedbackManager is the macOS equivalent for haptics.
-    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+    
+    private func playHaptic() {
+        NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .default)
+    }
 }
 
 #Preview {
