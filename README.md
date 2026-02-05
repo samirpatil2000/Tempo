@@ -60,7 +60,10 @@
 
 <p align="center">
   <!-- Add your screenshot here -->
-  <em>Modern glassmorphic interface with segmented controls</em>
+  <img width="420" height="553" alt="image" src="https://github.com/user-attachments/assets/e7b662b4-41ec-4f68-a1b4-ba5a71e7bd9c" />
+  <img width="423" height="550" alt="image" src="https://github.com/user-attachments/assets/47e47e2d-963c-4c08-805d-c88e116ec65a" />
+
+
 </p>
 
 ---
