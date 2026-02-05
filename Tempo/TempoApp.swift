@@ -10,6 +10,5 @@ struct TempoApp: App {
                 .environmentObject(appState)
         }
         .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
     }
 }
