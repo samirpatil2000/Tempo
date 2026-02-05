@@ -5,30 +5,39 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+            // Fixed Header
             header
-                .padding(.bottom, 24)
+                .padding(.bottom, 16)
+                .background(AppColors.surfaceElevated) // Ensure background opacity for scroll behind
+                .zIndex(1)
             
-            // Media Info Card
-            DropZoneView()
-                .padding(.bottom, 28)
-            
-            // Controls - Only show when video is loaded
-            if appState.videoInfo != nil {
+            // Scrollable Content
+            ScrollView {
                 VStack(spacing: 24) {
-                    SpeedSelectorView()
-                    ResolutionSelectorView()
+                    // Media Info Card / Drop Zone
+                    DropZoneView()
+                    
+                    // Controls - Only show when video is loaded
+                    if appState.videoInfo != nil {
+                        VStack(spacing: 32) {
+                            SpeedSelectorView()
+                            ResolutionSelectorView()
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
-                .padding(.bottom, 28)
+                .padding(.vertical, 4) // Slight top padding inside scroll
+                .padding(.bottom, 24) // Bottom breathing room
             }
+            .scrollIndicators(.hidden) // "No visible scrollbars"
             
-            Spacer()
-            
-            // Export Button
+            // Fixed Footer
             ExportButtonView()
+                .padding(.top, 20)
+                .background(AppColors.surfaceElevated)
+                .zIndex(1)
         }
-        .padding(32)
+        .padding(24)
         .frame(width: 420, height: 520)
         .background(AppColors.surfaceElevated)
         .animation(AppAnimations.smooth, value: appState.videoInfo != nil)

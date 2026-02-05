@@ -21,16 +21,10 @@ struct SpeedSelectorView: View {
                 
                 // Current Value Display
                 HStack(spacing: 4) {
-                    if #available(macOS 13.0, *) {
-                        Text(String(format: "%.2f×", appState.speedMultiplier))
-                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(AppColors.textPrimary)
-                            .contentTransition(.numericText(countsDown: false))
-                    } else {
-                        Text(String(format: "%.2f×", appState.speedMultiplier))
-                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(AppColors.textPrimary)
-                    }
+                    Text(String(format: "%.2f×", appState.speedMultiplier))
+                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(AppColors.textPrimary)
+                        .contentTransition(.numericText(countsDown: false))
                     
                     if let duration = formattedDuration {
                         Text("•")
@@ -49,29 +43,44 @@ struct SpeedSelectorView: View {
             }
             .padding(.horizontal, 4)
             
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 // Custom Slider
                 CustomSlider(value: $appState.speedMultiplier, range: 0.1...4.0)
+                    .padding(.top, 8)
                 
-                // Presets Grid
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(presets, id: \.self) { speed in
-                            PresetButton(
-                                title: String(format: "%g×", speed),
-                                isSelected: abs(appState.speedMultiplier - speed) < 0.01
-                            ) {
-                                withAnimation(AppAnimations.quick) {
-                                    appState.speedMultiplier = speed
-                                }
-                                playHaptic()
+                // Presets Grid - Static Layout (No Nested Scroll)
+                HStack(spacing: 12) {
+                    // Primary presets
+                    ForEach([0.5, 1.0, 1.25, 1.5, 2.0], id: \.self) { speed in
+                        PresetButton(
+                            title: String(format: "%g×", speed),
+                            isSelected: abs(appState.speedMultiplier - speed) < 0.01
+                        ) {
+                            withAnimation(AppAnimations.quick) {
+                                appState.speedMultiplier = speed
                             }
+                            playHaptic()
                         }
                     }
-                    .padding(.horizontal, 4)
                 }
+                .frame(maxWidth: .infinity)
+                
+                // Dynamic descriptive text (Prompt requirement)
+                Text(speedDescription)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(AppColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
             }
         }
+    }
+    
+    private var speedDescription: String {
+        let speed = appState.speedMultiplier
+        if speed < 1.0 { return "Slow Motion" }
+        if speed == 1.0 { return "Normal Speed" }
+        if speed <= 1.5 { return "Cinematic Fast" }
+        return "Timelapse"
     }
     
     private var formattedDuration: String? {
@@ -182,7 +191,17 @@ struct ResolutionSelectorView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header
+            HStack {
+                Label("Export Quality", systemImage: "sparkles.tv")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(AppColors.textSecondary)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 4)
+            
             // Segmented Control
             SegmentedControl(
                 items: Resolution.allCases,
@@ -192,7 +211,7 @@ struct ResolutionSelectorView: View {
             )
             
             // Helper text
-            Text("Export quality")
+            Text("Higher resolution may increase export time and file size.")
                 .font(.system(size: 11, weight: .regular))
                 .foregroundStyle(AppColors.textTertiary)
                 .padding(.leading, 4)

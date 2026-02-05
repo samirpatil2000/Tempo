@@ -1,6 +1,6 @@
 import SwiftUI
 import AVFoundation
-// Support for macos 12+ 
+// Support for macos 13+ 
 @MainActor
 class AppState: ObservableObject {
     @Published var videoInfo: VideoInfo?

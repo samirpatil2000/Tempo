@@ -144,14 +144,14 @@ struct ExportButtonView: View {
     // MARK: - Completion View
     
     private func completionView(url: URL) -> some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 10) {
             ZStack {
                 Circle()
                     .fill(AppColors.success.opacity(0.15))
-                    .frame(width: 48, height: 48)
+                    .frame(width: 40, height: 40)
                 
                 Image(systemName: "checkmark")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(AppColors.success)
             }
             
