@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Assets/Tempo-Logo.png" alt="Tempo Logo" width="128" height="128">
+  <img src="Tempo/Assets/Tempo-Logo.png" alt="Tempo Logo" width="128" height="128">
 </p>
 
 <h1 align="center">Tempo</h1>
