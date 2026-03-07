@@ -60,9 +60,9 @@
 
 <p align="center">
   <!-- Add your screenshot here -->
-  <img width="420" height="553" alt="image" src="https://github.com/user-attachments/assets/e7b662b4-41ec-4f68-a1b4-ba5a71e7bd9c" />
-  <img width="423" height="550" alt="image" src="https://github.com/user-attachments/assets/47e47e2d-963c-4c08-805d-c88e116ec65a" />
+  <img width="600" height="900" alt="Screenshot 2026-03-08 at 01 32 35" src="https://github.com/user-attachments/assets/c470b19c-6c49-4f4d-9088-f5dec2b35f50" />
 
+<img width="600" height="900" alt="Screenshot 2026-03-08 at 01 33 09" src="https://github.com/user-attachments/assets/55642a5a-198e-4718-ac19-132f6d1ba9e3" />
 
 </p>
 
