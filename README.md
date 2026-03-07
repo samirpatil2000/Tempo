@@ -10,9 +10,9 @@
 
 <p align="center">
   <a href="https://github.com/samirpatil2000/Tempo/releases/latest">
-    <img src="https://img.shields.io/badge/Download-v1.0-blue?style=for-the-badge&logo=apple" alt="Download">
+    <img src="https://img.shields.io/badge/Download-v1.1-blue?style=for-the-badge&logo=apple" alt="Download">
   </a>
-  <img src="https://img.shields.io/badge/macOS-12.0+-black?style=for-the-badge&logo=apple" alt="macOS 12+">
+  <img src="https://img.shields.io/badge/macOS-13.0+-black?style=for-the-badge&logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9-orange?style=for-the-badge&logo=swift" alt="Swift 5.9">
 </p>
 
@@ -24,17 +24,18 @@
 - **📺 Quality Options** — Choose Original, 480p, 720p, or 1080p output
 - **📂 Drag & Drop** — Simply drop video files onto the app
 - **📊 Real-time Progress** — Circular progress indicator with estimated file size
-- **🌙 Dark Mode** — Beautiful automatic light/dark theme support
-- **🎨 Apple 2026 Design** — Modern glassmorphic UI with smooth animations
-- **⚡ Lightweight** — Minimal, focused utility that does one thing well
+- **🌙 Dark Mode** — Deep, calming dark surfaces that let your content shine
+- **🎨 Minimalist Design** — Refined, typography-driven interface with subtle interactions
+- **🔗 Open With Support** — Right-click any video and select Open With → Tempo
+- **⚡ Lightweight** — Focused utility that does one thing exceptionally well
 
 ---
 
 ## 📥 Download
 
 <p align="center">
-  <a href="https://github.com/samirpatil2000/Tempo/releases/download/v1.0/Tempo.dmg">
-    <img src="https://img.shields.io/badge/⬇️_Download_Tempo.dmg-1.0-2ea44f?style=for-the-badge" alt="Download Tempo.dmg">
+  <a href="https://github.com/samirpatil2000/Tempo/releases/download/v1.1/Tempo.dmg">
+    <img src="https://img.shields.io/badge/⬇️_Download_Tempo.dmg-1.1-2ea44f?style=for-the-badge" alt="Download Tempo.dmg">
   </a>
 </p>
 
@@ -48,11 +49,11 @@
 ## 🚀 Getting Started
 
 1. **Download** the `.dmg` file from above
-2. **Drag** Tempo to your Applications folder
-3. **Launch** Tempo
-4. **Drop** a video file onto the app (or click to browse)
-5. **Select** your speed and quality options
-6. **Export** — choose where to save and you're done!
+2. **Open** the downloaded `Tempo.dmg`
+3. **Drag** `Tempo.app` into the adjacent Applications folder shortcut
+4. **Launch** Tempo from `/Applications`
+5. **Drop** a video file onto the app, or right-click any video and choose **Open With → Tempo**
+6. **Export** — choose your speed and quality options, then export!
 
 ---
 
@@ -86,15 +87,13 @@
 git clone https://github.com/samirpatil2000/Tempo.git
 cd Tempo
 
-# Open in Xcode
-open Tempo.xcodeproj
-
-# Build and run
-# Press ⌘R in Xcode
+# Build the app and create a DMG
+./build_dmg.sh
 ```
+Or open `Tempo.xcodeproj` in Xcode and build normally.
 
 ### Requirements
-- macOS 12.0 or later
+- macOS 13.0 or later
 - Xcode 15.0 or later
 - Swift 5.9
 
