@@ -38,7 +38,7 @@ struct ContentView: View {
             .transition(.opacity)
         }
         .padding(32)
-        .frame(minWidth: 420, minHeight: 580)
+        .frame(minWidth: 420, idealWidth: 480, minHeight: 580, idealHeight: 680)
         .background(AppColors.windowBackground)
         .animation(AppAnimations.smooth, value: appState.videoInfo != nil)
     }

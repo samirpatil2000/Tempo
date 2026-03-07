@@ -42,12 +42,12 @@ enum AppColors {
         }
     })
     
-    // Card surface — barely there, translucent
+    // Card surface — solid, elevated
     static let cardSurface = Color(nsColor: NSColor(name: nil) { appearance in
         if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-            return NSColor(white: 1.0, alpha: 0.04)
+            return NSColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1.0)
         } else {
-            return NSColor(white: 0.0, alpha: 0.02)
+            return NSColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
         }
     })
     
@@ -115,11 +115,7 @@ struct GlassCard: ViewModifier {
         content
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(AppColors.cardSurface)
-                    )
+                    .fill(AppColors.cardSurface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
