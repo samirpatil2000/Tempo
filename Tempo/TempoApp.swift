@@ -8,6 +8,11 @@ struct TempoApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
+                .onOpenURL { url in
+                    Task {
+                        await appState.loadVideo(from: url)
+                    }
+                }
         }
         .windowStyle(.hiddenTitleBar)
     }
