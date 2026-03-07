@@ -93,16 +93,24 @@ echo "🧼 Removing quarantine attribute..."
 xattr -cr build/${APP_NAME}.app
 
 echo "💿 Creating DMG..."
+# Stage DMG contents with Applications symlink for drag-to-install
+mkdir -p build/dmg_staging
+rm -rf build/dmg_staging/*
+cp -R build/${APP_NAME}.app build/dmg_staging/
+ln -sf /Applications build/dmg_staging/Applications
+
 hdiutil create \
   -volname "${APP_NAME}" \
-  -srcfolder build/${APP_NAME}.app \
+  -srcfolder build/dmg_staging \
   -ov \
   -format UDZO \
   build/${APP_NAME}.dmg
+
+rm -rf build/dmg_staging
 
 echo "🧼 Removing quarantine from DMG..."
 xattr -cr build/${APP_NAME}.dmg
 
 echo ""
 echo "✅ Done! DMG is located at: build/${APP_NAME}.dmg"
-echo "   If macOS still complains, run:  xattr -cr /path/to/Tempo.app"
+echo "   Open the DMG and drag Tempo.app to Applications before running it."
