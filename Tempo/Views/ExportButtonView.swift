@@ -6,7 +6,7 @@ struct ExportButtonView: View {
     @State private var isPressed = false
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             content
             
             // Microcopy
@@ -40,10 +40,10 @@ struct ExportButtonView: View {
     private var estimatedInfo: some View {
         HStack(spacing: 6) {
             if let duration = estimatedDuration {
-                Text("Duration: \(duration)")
+                Text(duration)
             }
             if let size = estimatedSize {
-                Text("•")
+                Text("·")
                 Text("~\(size)")
             }
         }
@@ -74,7 +74,7 @@ struct ExportButtonView: View {
         return String(format: "%.0f MB", sizeMB)
     }
     
-    // MARK: - Export Button
+    // MARK: - Export Button (The ONE accent element)
     
     private var exportButton: some View {
         Button(action: startExport) {
@@ -82,18 +82,37 @@ struct ExportButtonView: View {
                 Text("Export Video")
                     .font(.system(size: 15, weight: .semibold))
                 
-                Image(systemName: "square.and.arrow.up")
-                    .font(.system(size: 13, weight: .semibold))
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 12, weight: .semibold))
             }
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .frame(height: 48)
+            .frame(height: 46)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(appState.canExport ? AppColors.accent : AppColors.textTertiary)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(
+                        appState.canExport
+                            ? LinearGradient(
+                                colors: [
+                                    AppColors.accent,
+                                    AppColors.accent.opacity(0.85)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                              )
+                            : LinearGradient(
+                                colors: [AppColors.textTertiary],
+                                startPoint: .top,
+                                endPoint: .bottom
+                              )
+                    )
             )
-            .shadow(color: appState.canExport ? AppColors.accentGlow : .clear, radius: isPressed ? 4 : 12, y: isPressed ? 2 : 4)
-            .scaleEffect(isPressed ? 0.97 : 1.0)
+            .shadow(
+                color: appState.canExport ? AppColors.accentGlow : .clear,
+                radius: isPressed ? 4 : 10,
+                y: isPressed ? 1 : 3
+            )
+            .scaleEffect(isPressed ? 0.98 : 1.0)
         }
         .buttonStyle(.plain)
         .disabled(!appState.canExport)
@@ -107,34 +126,33 @@ struct ExportButtonView: View {
     // MARK: - Progress View
     
     private var progressView: some View {
-        VStack(spacing: 16) {
-            // Circular progress
+        VStack(spacing: 14) {
+            // Circular progress — minimal
             ZStack {
                 Circle()
-                .stroke(AppColors.segmentBackground, lineWidth: 4)
-                .frame(width: 56, height: 56)
+                    .stroke(AppColors.hairline, lineWidth: 3)
+                    .frame(width: 48, height: 48)
                 
                 Circle()
-                .trim(from: 0, to: appState.exportProgress)
-                .stroke(AppColors.accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                .frame(width: 56, height: 56)
-                .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.1), value: appState.exportProgress)
+                    .trim(from: 0, to: appState.exportProgress)
+                    .stroke(AppColors.textSecondary, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                    .frame(width: 48, height: 48)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.linear(duration: 0.1), value: appState.exportProgress)
                 
                 Text("\(Int(appState.exportProgress * 100))%")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .monospaced))
                     .foregroundStyle(AppColors.textPrimary)
-                    .monospacedDigit()
             }
             
-            Text("Exporting...")
+            Text("Exporting…")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(AppColors.textSecondary)
             
             Button("Cancel") {
                 cancelExport()
             }
-            .font(.system(size: 12, weight: .medium))
+            .font(.system(size: 12, weight: .regular))
             .foregroundStyle(AppColors.textTertiary)
             .buttonStyle(.plain)
         }
@@ -145,15 +163,9 @@ struct ExportButtonView: View {
     
     private func completionView(url: URL) -> some View {
         VStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(AppColors.success.opacity(0.15))
-                    .frame(width: 40, height: 40)
-                
-                Image(systemName: "checkmark")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(AppColors.success)
-            }
+            Image(systemName: "checkmark")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(AppColors.success)
             
             Text("Export Complete")
                 .font(.system(size: 14, weight: .semibold))
@@ -163,9 +175,9 @@ struct ExportButtonView: View {
                 Button {
                     NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.deletingLastPathComponent().path)
                 } label: {
-                    Text("Show in Finder")
+                    Text("Reveal in Finder")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(AppColors.accent)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
                 .buttonStyle(.plain)
                 
@@ -175,7 +187,7 @@ struct ExportButtonView: View {
                 } label: {
                     Text("Done")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.textTertiary)
                 }
                 .buttonStyle(.plain)
             }
@@ -186,16 +198,10 @@ struct ExportButtonView: View {
     // MARK: - Error View
     
     private func errorView(message: String) -> some View {
-        VStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(AppColors.error.opacity(0.15))
-                    .frame(width: 48, height: 48)
-                
-                Image(systemName: "xmark")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(AppColors.error)
-            }
+        VStack(spacing: 10) {
+            Image(systemName: "xmark")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(AppColors.error)
             
             Text("Export Failed")
                 .font(.system(size: 14, weight: .semibold))
@@ -211,7 +217,7 @@ struct ExportButtonView: View {
                 appState.exportState = .idle
             }
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(AppColors.accent)
+            .foregroundStyle(AppColors.textSecondary)
             .buttonStyle(.plain)
         }
         .padding(.vertical, 8)
@@ -264,7 +270,6 @@ struct ExportButtonView: View {
     private func generateOutputFilename(from original: String) -> String {
         let baseName = (original as NSString).deletingPathExtension
         
-        // Format speed string clean: "1x", "1.5x", etc
         let speed = appState.speedMultiplier
         let speedString: String
         if floor(speed) == speed {

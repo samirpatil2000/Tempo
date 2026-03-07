@@ -5,41 +5,41 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Fixed Header
+            // Draggable header area (since title bar is hidden)
             header
-                .padding(.bottom, 16)
-                .background(AppColors.surfaceElevated) // Ensure background opacity for scroll behind
-                .zIndex(1)
+                .padding(.bottom, 20)
             
-            // Scrollable Content
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Media Info Card / Drop Zone
-                    DropZoneView()
+            // Main content — fills available space, no scrolling
+            VStack(spacing: 28) {
+                DropZoneView()
+                
+                if appState.videoInfo != nil {
+                    // Hairline separator
+                    Rectangle()
+                        .fill(AppColors.hairline)
+                        .frame(height: 0.5)
+                        .padding(.horizontal, 4)
                     
-                    // Controls - Only show when video is loaded
-                    if appState.videoInfo != nil {
-                        VStack(spacing: 32) {
-                            SpeedSelectorView()
-                            ResolutionSelectorView()
-                        }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
+                    SpeedSelectorView()
+                    
+                    // Hairline separator
+                    Rectangle()
+                        .fill(AppColors.hairline)
+                        .frame(height: 0.5)
+                        .padding(.horizontal, 4)
+                    
+                    ResolutionSelectorView()
                 }
-                .padding(.vertical, 4) // Slight top padding inside scroll
-                .padding(.bottom, 24) // Bottom breathing room
+                
+                Spacer(minLength: 0)
+                
+                ExportButtonView()
             }
-            .scrollIndicators(.hidden) // "No visible scrollbars"
-            
-            // Fixed Footer
-            ExportButtonView()
-                .padding(.top, 20)
-                .background(AppColors.surfaceElevated)
-                .zIndex(1)
+            .transition(.opacity)
         }
-        .padding(24)
-        .frame(width: 420, height: 520)
-        .background(AppColors.surfaceElevated)
+        .padding(32)
+        .frame(minWidth: 420, minHeight: 580)
+        .background(AppColors.windowBackground)
         .animation(AppAnimations.smooth, value: appState.videoInfo != nil)
     }
     
@@ -49,25 +49,23 @@ struct ContentView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Export Video")
-                    .font(.system(size: 22, weight: .semibold, design: .default))
+                    .font(.system(size: 24, weight: .semibold, design: .default))
                     .foregroundStyle(AppColors.textPrimary)
                 
                 Text("Tempo")
-                    .font(.system(size: 12, weight: .medium, design: .default))
+                    .font(.system(size: 12, weight: .regular, design: .default))
                     .foregroundStyle(AppColors.textTertiary)
             }
             
             Spacer()
-            
-            // App icon placeholder
-            Image(systemName: "film.stack")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(AppColors.accent.opacity(0.8))
-                .frame(width: 36, height: 36)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(AppColors.segmentBackground)
-                )
+        }
+        // Make the header area draggable for window movement
+        .background(Color.clear)
+        .onTapGesture(count: 2) {
+            // Double-click to zoom (standard macOS behavior)
+            if let window = NSApplication.shared.mainWindow {
+                window.zoom(nil)
+            }
         }
     }
 }

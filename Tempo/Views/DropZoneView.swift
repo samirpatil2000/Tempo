@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 struct DropZoneView: View {
     @EnvironmentObject var appState: AppState
     @State private var isTargeted = false
-    @State private var isHovering = false
     
     private let supportedTypes: [UTType] = [.movie, .mpeg4Movie, .quickTimeMovie, .avi]
     
@@ -18,18 +17,14 @@ struct DropZoneView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(AppColors.surfaceElevated)
-        )
+        .glassCard(cornerRadius: 14)
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(
-                    isTargeted ? AppColors.accent : AppColors.glassStroke,
-                    lineWidth: isTargeted ? 2 : 1
+                    isTargeted ? AppColors.accent.opacity(0.5) : Color.clear,
+                    lineWidth: 1
                 )
         )
-        .shadow(color: .black.opacity(isTargeted ? 0.1 : 0.05), radius: isTargeted ? 12 : 8, y: 4)
         .scaleEffect(isTargeted ? 0.985 : 1.0)
         .animation(AppAnimations.quick, value: isTargeted)
         .onDrop(of: supportedTypes, isTargeted: $isTargeted) { providers in
@@ -43,12 +38,12 @@ struct DropZoneView: View {
         VStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(AppColors.accent.opacity(0.1))
-                    .frame(width: 56, height: 56)
+                    .fill(AppColors.hairline)
+                    .frame(width: 52, height: 52)
                 
                 Image(systemName: "arrow.down.circle")
-                    .font(.system(size: 28, weight: .light))
-                    .foregroundStyle(AppColors.accent)
+                    .font(.system(size: 24, weight: .light))
+                    .foregroundStyle(AppColors.textSecondary)
             }
             
             VStack(spacing: 4) {
@@ -61,7 +56,7 @@ struct DropZoneView: View {
                     .foregroundStyle(AppColors.textTertiary)
             }
         }
-        .frame(height: 120)
+        .frame(height: 110)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture {
@@ -73,16 +68,20 @@ struct DropZoneView: View {
     
     private func loadedVideoView(_ videoInfo: VideoInfo) -> some View {
         HStack(spacing: 14) {
-            // Thumbnail
+            // Minimal icon
             ZStack {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(AppColors.accent.opacity(0.1))
+                    .fill(AppColors.controlBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(AppColors.hairline, lineWidth: 0.5)
+                    )
                 
                 Image(systemName: "film")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(AppColors.accent)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(AppColors.textSecondary)
             }
-            .frame(width: 52, height: 52)
+            .frame(width: 48, height: 48)
             
             // File info
             VStack(alignment: .leading, spacing: 3) {
@@ -94,7 +93,7 @@ struct DropZoneView: View {
                 
                 HStack(spacing: 6) {
                     Text(videoInfo.durationFormatted)
-                    Text("•")
+                    Text("·")
                     Text("\(Int(videoInfo.resolution.width))×\(Int(videoInfo.resolution.height))")
                 }
                 .font(.system(size: 11, weight: .regular))
@@ -103,21 +102,22 @@ struct DropZoneView: View {
             
             Spacer()
             
-            // Change button
+            // Change — just text, no button chrome
             Button {
                 selectVideo()
             } label: {
                 Text("Change")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(AppColors.accent)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(AppColors.accent.opacity(0.1))
-                    )
+                    .foregroundStyle(AppColors.textSecondary)
             }
             .buttonStyle(.plain)
+            .onHover { hovering in
+                if hovering {
+                    NSCursor.pointingHand.push()
+                } else {
+                    NSCursor.pop()
+                }
+            }
         }
     }
     

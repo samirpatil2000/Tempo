@@ -27,41 +27,32 @@ extension Color {
     }
 }
 
-// MARK: - App Colors (Apple 2026 Glassmorphic)
+// MARK: - App Colors (Jony Ive — Restraint, Clarity, Depth)
 
 enum AppColors {
-    // Primary accent
-    static let accent = Color(hex: "007AFF") // Apple blue
+    // The single accent — used sparingly (Export button only)
+    static let accent = Color(hex: "0A84FF") // Apple system blue
     
-    // Adaptive backgrounds
-    static let background = Color(nsColor: NSColor(name: nil) { appearance in
+    // Window background — deep, calm
+    static let windowBackground = Color(nsColor: NSColor(name: nil) { appearance in
         if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-            return NSColor(red: 0.07, green: 0.07, blue: 0.08, alpha: 1.0) // #121214
+            return NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0)
         } else {
-            return NSColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0) // #F5F5F7
+            return NSColor(red: 0.97, green: 0.97, blue: 0.98, alpha: 1.0)
         }
     })
     
-    // Glass panel background
-    static let glassBackground = Color(nsColor: NSColor(name: nil) { appearance in
+    // Card surface — barely there, translucent
+    static let cardSurface = Color(nsColor: NSColor(name: nil) { appearance in
         if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-            return NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 0.85) // Dark glass
+            return NSColor(white: 1.0, alpha: 0.04)
         } else {
-            return NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.7) // Light glass
+            return NSColor(white: 0.0, alpha: 0.02)
         }
     })
     
-    // Elevated surface (cards, controls)
-    static let surfaceElevated = Color(nsColor: NSColor(name: nil) { appearance in
-        if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-            return NSColor(red: 0.16, green: 0.16, blue: 0.18, alpha: 1.0) // #292930
-        } else {
-            return NSColor.white
-        }
-    })
-    
-    // Glass stroke/border
-    static let glassStroke = Color(nsColor: NSColor(name: nil) { appearance in
+    // Hairline borders — the faintest structure
+    static let hairline = Color(nsColor: NSColor(name: nil) { appearance in
         if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
             return NSColor(white: 1.0, alpha: 0.08)
         } else {
@@ -69,29 +60,81 @@ enum AppColors {
         }
     })
     
-    // Segmented control background
-    static let segmentBackground = Color(nsColor: NSColor(name: nil) { appearance in
+    // Selected border — slightly brighter, the only visual difference
+    static let selectedBorder = Color(nsColor: NSColor(name: nil) { appearance in
         if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
-            return NSColor(red: 0.1, green: 0.1, blue: 0.12, alpha: 1.0) // #1A1A1F
+            return NSColor(white: 1.0, alpha: 0.35)
         } else {
-            return NSColor(red: 0.94, green: 0.94, blue: 0.95, alpha: 1.0) // #F0F0F2
+            return NSColor(white: 0.0, alpha: 0.25)
         }
     })
     
-    // Accent glow for selected states
-    static let accentGlow = Color(hex: "007AFF").opacity(0.25)
+    // Control background — pill/segment inactive
+    static let controlBackground = Color(nsColor: NSColor(name: nil) { appearance in
+        if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
+            return NSColor(white: 1.0, alpha: 0.03)
+        } else {
+            return NSColor(white: 0.0, alpha: 0.03)
+        }
+    })
     
-    // Status colors
-    static let success = Color(hex: "30D158") // Apple green
-    static let error = Color(hex: "FF453A") // Apple red
+    // Segmented control track
+    static let segmentTrack = Color(nsColor: NSColor(name: nil) { appearance in
+        if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
+            return NSColor(white: 1.0, alpha: 0.05)
+        } else {
+            return NSColor(white: 0.0, alpha: 0.04)
+        }
+    })
     
-    // Text colors
+    // Accent glow — for the export button shadow only
+    static let accentGlow = Color(hex: "0A84FF").opacity(0.2)
+    
+    // Status
+    static let success = Color(hex: "30D158")
+    static let error = Color(hex: "FF453A")
+    
+    // Typography — hierarchy through opacity
     static let textPrimary = Color.primary
     static let textSecondary = Color.secondary
-    static let textTertiary = Color.primary.opacity(0.4)
+    static let textTertiary = Color.primary.opacity(0.35)
+    
+    // Keep backward compatibility aliases
+    static let background = windowBackground
+    static let surfaceElevated = cardSurface
+    static let glassStroke = hairline
+    static let segmentBackground = segmentTrack
 }
 
-// MARK: - Glass Material Modifier
+// MARK: - Glass Card Modifier
+
+struct GlassCard: ViewModifier {
+    var cornerRadius: CGFloat = 14
+    
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(AppColors.cardSurface)
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(AppColors.hairline, lineWidth: 0.5)
+            )
+    }
+}
+
+extension View {
+    func glassCard(cornerRadius: CGFloat = 14) -> some View {
+        modifier(GlassCard(cornerRadius: cornerRadius))
+    }
+}
+
+// MARK: - Legacy Glass Material (kept for compatibility)
 
 struct GlassMaterial: ViewModifier {
     var cornerRadius: CGFloat = 20
@@ -100,19 +143,8 @@ struct GlassMaterial: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(AppColors.glassBackground)
-                    .background(
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(.ultraThinMaterial)
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(AppColors.glassStroke, lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
+            .glassCard(cornerRadius: cornerRadius)
+            .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
     }
 }
 
