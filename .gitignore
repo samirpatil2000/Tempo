@@ -18,3 +18,4 @@ xcuserdata/
 
 # CocoaPods
 Pods/
+.env

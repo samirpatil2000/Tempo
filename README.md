@@ -5,12 +5,12 @@
 <h1 align="center">Tempo</h1>
 
 <p align="center">
-  <strong>A sleek video speed & export utility for macOS</strong>
+  <strong>A sleek video speed & export utility + image compressor for macOS</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/samirpatil2000/Tempo/releases/latest">
-    <img src="https://img.shields.io/badge/Download-v1.1-blue?style=for-the-badge&logo=apple" alt="Download">
+    <img src="https://img.shields.io/badge/Download-v1.2-blue?style=for-the-badge&logo=apple" alt="Download">
   </a>
   <img src="https://img.shields.io/badge/macOS-13.0+-black?style=for-the-badge&logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9-orange?style=for-the-badge&logo=swift" alt="Swift 5.9">
@@ -21,13 +21,23 @@
 
 ## ✨ Features
 
+**Video Export**
 - **🚀 Speed Control** — Export videos at 1×, 2×, 3×, or 4× playback speed
 - **📺 Quality Options** — Choose Original, 480p, 720p, or 1080p output
-- **📂 Drag & Drop** — Simply drop video files onto the app
 - **📊 Real-time Progress** — Circular progress indicator with estimated file size
+
+**Image Compression**
+- **📷 Smart Compression** — Adjust quality from low to near-lossless
+- **🧹 Metadata Stripping** — Optional EXIF/metadata removal for smaller files
+- **📂 Batch Processing** — Compress multiple images at once
+- **👁️ Live Preview** — Thumbnail previews with before/after file sizes
+- **🎨 Format Support** — JPEG, PNG, HEIC with automatic PNG→JPEG conversion
+
+**General**
+- **📂 Drag & Drop** — Simply drop files onto the app
 - **🌙 Dark Mode** — Deep, calming dark surfaces that let your content shine
 - **🎨 Minimalist Design** — Refined, typography-driven interface with subtle interactions
-- **🔗 Open With Support** — Right-click any video and select Open With → Tempo
+- **🔗 Open With Support** — Right-click any video or image and select Open With → Tempo
 - **⚡ Lightweight** — Focused utility that does one thing exceptionally well
 
 ---
@@ -35,8 +45,8 @@
 ## 📥 Download
 
 <p align="center">
-  <a href="https://github.com/samirpatil2000/Tempo/releases/download/v1.1/Tempo.dmg">
-    <img src="https://img.shields.io/badge/⬇️_Download_Tempo.dmg-1.1-2ea44f?style=for-the-badge" alt="Download Tempo.dmg">
+  <a href="https://github.com/samirpatil2000/Tempo/releases/download/v1.2/Tempo.dmg">
+    <img src="https://img.shields.io/badge/⬇️_Download_Tempo.dmg-1.2-2ea44f?style=for-the-badge" alt="Download Tempo.dmg">
   </a>
 </p>
 
@@ -53,8 +63,10 @@
 2. **Open** the downloaded `Tempo.dmg`
 3. **Drag** `Tempo.app` into the adjacent Applications folder shortcut
 4. **Launch** Tempo from `/Applications`
-5. **Drop** a video file onto the app, or right-click any video and choose **Open With → Tempo**
-6. **Export** — choose your speed and quality options, then export!
+5. **Choose Mode** — Switch between "Export Video" or "Compress Images" at the top
+6. **Drop Files** — Drag video or image files onto the app
+7. **Configure** — Set speed/quality (video) or compression level/options (images)
+8. **Export** — Click the export button and choose your output location!
 
 ---
 
@@ -72,12 +84,20 @@
 
 ## 🎬 Supported Formats
 
+**Video**
 | Input | Output |
 |-------|--------|
 | `.mov` | `.mp4` |
 | `.mp4` | `.mp4` |
 | `.avi` | `.mp4` |
 | QuickTime | H.264 |
+
+**Images**
+| Input | Output | Notes |
+|-------|--------|-------|
+| `.jpg` / `.jpeg` | `.jpg` | Adjustable quality (0-100%) |
+| `.png` | `.jpg` | Auto-converts to JPEG for compression |
+| `.heic` | `.heic` | Apple's modern format, adjustable quality |
 
 ---
 
@@ -104,18 +124,26 @@ Or open `Tempo.xcodeproj` in Xcode and build normally.
 
 ```
 Tempo/
-├── TempoApp.swift           # App entry point
+├── TempoApp.swift           # App entry point with URL routing
 ├── Theme.swift              # Colors, materials & animations
 ├── Models/
-│   ├── AppState.swift       # App state management
+│   ├── AppState.swift       # Unified state management (video + image)
+│   ├── AppMode.swift        # Video/Image mode enum
+│   ├── ImageFile.swift      # Image data model with compression metadata
 │   └── Resolution.swift     # Speed & resolution enums
 ├── Processing/
-│   └── VideoProcessor.swift # Video export engine
+│   ├── VideoProcessor.swift # Video export engine
+│   └── ImageProcessor.swift # Image compression engine (ImageIO)
 └── Views/
-    ├── ContentView.swift       # Main layout
-    ├── DropZoneView.swift      # Drag & drop zone
-    ├── SelectorViews.swift     # Segmented controls
-    └── ExportButtonView.swift  # Export button & progress
+    ├── ContentView.swift        # Main layout with mode toggle
+    ├── DropZoneView.swift       # Video drag & drop zone
+    ├── ImageDropZoneView.swift  # Image drag & drop zone
+    ├── SelectorViews.swift      # Segmented controls
+    ├── ExportButtonView.swift   # Video export button & progress
+    ├── ImageExportButtonView.swift  # Image export button & progress
+    ├── ImageListView.swift      # Image file list with thumbnails
+    ├── ImageControlsView.swift  # Quality slider & metadata options
+    └── ImageDropZoneView.swift  # Multi-file image drop zone
 ```
 
 ---

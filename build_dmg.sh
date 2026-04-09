@@ -1,9 +1,16 @@
 #!/bin/bash
 set -e
 
-APP_NAME="Tempo"
-BUNDLE_ID="com.samirpatil.Tempo"
-DEPLOY_TARGET="13.0"
+APP_NAME="${APP_NAME:-Tempo}"
+BUNDLE_ID="${BUNDLE_ID:-com.samirpatil.Tempo}"
+DEPLOY_TARGET="${DEPLOY_TARGET:-13.0}"
+
+echo "📦 Loading environment..."
+if [ -f .env ]; then
+  set -a # automatically export all variables
+  source .env
+  set +a
+fi
 
 echo "🧹 Cleaning up old build..."
 rm -rf build
@@ -19,6 +26,7 @@ swiftc \
   -framework SwiftUI \
   -framework AVFoundation \
   -framework CoreImage \
+  -framework ImageIO \
   Tempo/*.swift Tempo/Models/*.swift Tempo/Processing/*.swift Tempo/Views/*.swift \
   -o build/${APP_NAME}.app/Contents/MacOS/${APP_NAME}
 
@@ -70,6 +78,20 @@ cat > build/${APP_NAME}.app/Contents/Info.plist << 'PLIST'
 				<string>com.apple.quicktime-movie</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.jpeg</string>
+				<string>public.png</string>
+				<string>public.heic</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
@@ -87,7 +109,21 @@ echo "📦 Writing PkgInfo..."
 echo "APPL????" > build/${APP_NAME}.app/Contents/PkgInfo
 
 echo "🔏 Code signing..."
-codesign --force --deep --sign - --entitlements Tempo/Tempo.entitlements build/${APP_NAME}.app
+if [ -n "$SIGN_IDENTITY" ]; then
+    codesign \
+      --force \
+      --deep \
+      --timestamp \
+      --options runtime \
+      --sign "${SIGN_IDENTITY}" \
+      --entitlements Tempo/Tempo.entitlements \
+      build/${APP_NAME}.app
+else
+    codesign --force --deep --sign - --entitlements Tempo/Tempo.entitlements build/${APP_NAME}.app
+fi
+
+echo "🔍 Verifying Signature..."
+codesign --verify --deep --strict build/${APP_NAME}.app
 
 echo "🧼 Removing quarantine attribute..."
 xattr -cr build/${APP_NAME}.app
@@ -104,13 +140,25 @@ hdiutil create \
   -srcfolder build/dmg_staging \
   -ov \
   -format UDZO \
-  build/${APP_NAME}.dmg
+  build/${APP_NAME}_Release.dmg
 
 rm -rf build/dmg_staging
 
+echo "📤 Notarizing DMG..."
+if [ -n "$NOTARY_PROFILE" ]; then
+    xcrun notarytool submit build/${APP_NAME}_Release.dmg \
+      --keychain-profile "${NOTARY_PROFILE}" \
+      --wait
+
+    echo "📎 Stapling DMG..."
+    xcrun stapler staple build/${APP_NAME}_Release.dmg
+else
+    echo "⚠️  Skipping Notarization because NOTARY_PROFILE is not set."
+fi
+
 echo "🧼 Removing quarantine from DMG..."
-xattr -cr build/${APP_NAME}.dmg
+xattr -cr build/${APP_NAME}_Release.dmg
 
 echo ""
-echo "✅ Done! DMG is located at: build/${APP_NAME}.dmg"
-echo "   Open the DMG and drag Tempo.app to Applications before running it."
+echo "✅ BUILD COMPLETE"
+echo "DMG: build/${APP_NAME}_Release.dmg"
