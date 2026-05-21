@@ -39,7 +39,9 @@ struct ContentView: View {
             }
             .transition(.opacity)
         }
-        .padding(32)
+        .padding(.top, 44)       // Clear the traffic-light buttons on hidden title bar
+        .padding(.horizontal, 32)
+        .padding(.bottom, 32)
         .frame(minWidth: 420, idealWidth: 480, minHeight: 580, idealHeight: 680)
         .background(AppColors.windowBackground)
         .animation(AppAnimations.smooth, value: appState.mode)
