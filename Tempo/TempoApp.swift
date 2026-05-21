@@ -4,6 +4,13 @@ import SwiftUI
 struct TempoApp: App {
     @StateObject private var appState = AppState()
     
+    init() {
+        UpdateService.shared.checkIfJustUpdated()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            UpdateService.shared.checkOnLaunchIfNeeded()
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -17,6 +24,17 @@ struct TempoApp: App {
         .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 480, height: 680)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates...") {
+                    UpdateService.shared.checkForUpdates(silent: false)
+                }
+            }
+        }
+
+        Settings {
+            SettingsView()
+        }
     }
     
     // MARK: - URL Handling

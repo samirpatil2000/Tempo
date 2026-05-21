@@ -24,6 +24,8 @@
 		1A000001000000000000000F /* AppMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000020000000000000011 /* AppMode.swift */; };
 		1A0000010000000000000010 /* ImageFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000020000000000000012 /* ImageFile.swift */; };
 		1A0000010000000000000011 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000020000000000000013 /* ImageProcessor.swift */; };
+		1A0000010000000000000020 /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000020000000000000020 /* UpdateService.swift */; };
+		1A0000010000000000000021 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000020000000000000021 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +48,8 @@
 		1A0000020000000000000011 /* AppMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMode.swift; sourceTree = "<group>"; };
 		1A0000020000000000000012 /* ImageFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFile.swift; sourceTree = "<group>"; };
 		1A0000020000000000000013 /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
+		1A0000020000000000000020 /* UpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/UpdateService.swift; sourceTree = "<group>"; };
+		1A0000020000000000000021 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/SettingsView.swift; sourceTree = "<group>"; };
 		1A0000030000000000000001 /* Tempo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tempo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -75,6 +79,7 @@
 				1A0000050000000000000004 /* Views */,
 				1A0000050000000000000005 /* Models */,
 				1A0000050000000000000006 /* Processing */,
+				1A0000050000000000000020 /* Services */,
 				1A0000020000000000000009 /* Assets.xcassets */,
 				1A000002000000000000000A /* Tempo.entitlements */,
 				1A000002000000000000000B /* Info.plist */,
@@ -102,6 +107,7 @@
 				1A000002000000000000000E /* ImageControlsView.swift */,
 				1A000002000000000000000F /* ImageDropZoneView.swift */,
 				1A0000020000000000000010 /* ImageExportButtonView.swift */,
+				1A0000020000000000000021 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -124,6 +130,14 @@
 				1A0000020000000000000013 /* ImageProcessor.swift */,
 			);
 			path = Processing;
+			sourceTree = "<group>";
+		};
+		1A0000050000000000000020 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000020000000000000020 /* UpdateService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -211,6 +225,8 @@
 				1A000001000000000000000F /* AppMode.swift in Sources */,
 				1A0000010000000000000010 /* ImageFile.swift in Sources */,
 				1A0000010000000000000011 /* ImageProcessor.swift in Sources */,
+				1A0000010000000000000020 /* UpdateService.swift in Sources */,
+				1A0000010000000000000021 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
