@@ -19,3 +19,5 @@ xcuserdata/
 # CocoaPods
 Pods/
 .env
+*.dmg
+*.zip

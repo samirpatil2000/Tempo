@@ -100,7 +100,8 @@ struct ContentView: View {
                     .font(.system(size: 24, weight: .semibold, design: .default))
                     .foregroundStyle(AppColors.textPrimary)
                 
-                Text("Tempo")
+                let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+                Text("Tempo v\(version)")
                     .font(.system(size: 12, weight: .regular, design: .default))
                     .foregroundStyle(AppColors.textTertiary)
             }

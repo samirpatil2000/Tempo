@@ -12,26 +12,61 @@ if [ -f .env ]; then
   set +a
 fi
 
-echo "🧹 Cleaning up old build..."
-rm -rf build
-mkdir -p build/${APP_NAME}.app/Contents/MacOS
-mkdir -p build/${APP_NAME}.app/Contents/Resources
+BUILD_DIR="build"
 
-echo "🔨 Compiling Swift files..."
+echo "🧹 Cleaning..."
+rm -rf build dmg_* ${APP_NAME}_*.dmg ${APP_NAME}_*.zip
+
+mkdir -p ${BUILD_DIR}
+
+echo "🔨 Compiling Swift for arm64 (Apple Silicon)..."
 swiftc \
   -sdk $(xcrun --show-sdk-path --sdk macosx) \
-  -target $(uname -m)-apple-macosx${DEPLOY_TARGET} \
+  -target arm64-apple-macosx${DEPLOY_TARGET} \
   -parse-as-library \
   -framework Cocoa \
   -framework SwiftUI \
   -framework AVFoundation \
   -framework CoreImage \
   -framework ImageIO \
-  Tempo/*.swift Tempo/Models/*.swift Tempo/Processing/*.swift Tempo/Views/*.swift \
-  -o build/${APP_NAME}.app/Contents/MacOS/${APP_NAME}
+  Tempo/*.swift Tempo/Models/*.swift Tempo/Processing/*.swift Tempo/Services/*.swift Tempo/Views/*.swift \
+  -o ${BUILD_DIR}/${APP_NAME}_arm64
 
-echo "📋 Creating resolved Info.plist..."
-cat > build/${APP_NAME}.app/Contents/Info.plist << 'PLIST'
+echo "🔨 Compiling Swift for x86_64 (Intel)..."
+swiftc \
+  -sdk $(xcrun --show-sdk-path --sdk macosx) \
+  -target x86_64-apple-macosx${DEPLOY_TARGET} \
+  -parse-as-library \
+  -framework Cocoa \
+  -framework SwiftUI \
+  -framework AVFoundation \
+  -framework CoreImage \
+  -framework ImageIO \
+  Tempo/*.swift Tempo/Models/*.swift Tempo/Processing/*.swift Tempo/Services/*.swift Tempo/Views/*.swift \
+  -o ${BUILD_DIR}/${APP_NAME}_x86_64
+
+package_app() {
+    local ARCH_BIN=$1
+    local SUFFIX=$2
+    
+    echo ""
+    echo "======================================"
+    echo "🚀 Packaging ${APP_NAME} for ${SUFFIX}..."
+    echo "======================================"
+    
+    local ARCH_BUILD_DIR="${BUILD_DIR}/${SUFFIX}"
+    local APP_DIR="${ARCH_BUILD_DIR}/${APP_NAME}.app"
+    local DMG_DIR="dmg_${SUFFIX}"
+    local DMG_NAME="${APP_NAME}_${SUFFIX}.dmg"
+    
+    mkdir -p ${ARCH_BUILD_DIR}
+    mkdir -p ${APP_DIR}/Contents/MacOS
+    mkdir -p ${APP_DIR}/Contents/Resources
+    
+    cp ${ARCH_BIN} ${APP_DIR}/Contents/MacOS/${APP_NAME}
+    
+    echo "📋 Creating Info.plist..."
+    cat > ${APP_DIR}/Contents/Info.plist <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -39,25 +74,25 @@ cat > build/${APP_NAME}.app/Contents/Info.plist << 'PLIST'
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>Tempo</string>
+	<string>${APP_NAME}</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.samirpatil.Tempo</string>
+	<string>${BUNDLE_ID}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Tempo</string>
+	<string>${APP_NAME}</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>2.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>13.0</string>
+	<string>${DEPLOY_TARGET}</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026. All rights reserved.</string>
 	<key>NSPrincipalClass</key>
@@ -95,70 +130,104 @@ cat > build/${APP_NAME}.app/Contents/Info.plist << 'PLIST'
 	</array>
 </dict>
 </plist>
-PLIST
+EOF
 
-echo "🎨 Compiling Assets..."
-xcrun actool Tempo/Assets.xcassets \
-  --compile build/${APP_NAME}.app/Contents/Resources \
-  --platform macosx \
-  --minimum-deployment-target ${DEPLOY_TARGET} \
-  --app-icon AppIcon \
-  --output-partial-info-plist build/partial.plist 2>/dev/null
+    echo "🎨 Compiling Assets..."
+    xcrun actool Tempo/Assets.xcassets \
+      --compile ${APP_DIR}/Contents/Resources \
+      --platform macosx \
+      --minimum-deployment-target ${DEPLOY_TARGET} \
+      --app-icon AppIcon \
+      --output-partial-info-plist ${BUILD_DIR}/partial_${SUFFIX}.plist 2>/dev/null
 
-echo "📦 Writing PkgInfo..."
-echo "APPL????" > build/${APP_NAME}.app/Contents/PkgInfo
+    echo "📦 Creating PkgInfo..."
+    echo "APPL????" > ${APP_DIR}/Contents/PkgInfo
 
-echo "🔏 Code signing..."
-if [ -n "$SIGN_IDENTITY" ]; then
-    codesign \
-      --force \
-      --deep \
-      --timestamp \
-      --options runtime \
-      --sign "${SIGN_IDENTITY}" \
-      --entitlements Tempo/Tempo.entitlements \
-      build/${APP_NAME}.app
-else
-    codesign --force --deep --sign - --entitlements Tempo/Tempo.entitlements build/${APP_NAME}.app
-fi
+    echo "🔏 Signing..."
+    SIGN_OK=false
+    for attempt in 1 2 3; do
+        if [ -n "$SIGN_IDENTITY" ]; then
+            if codesign \
+                --force \
+                --deep \
+                --timestamp \
+                --options runtime \
+                --sign "${SIGN_IDENTITY}" \
+                --entitlements Tempo/Tempo.entitlements \
+                ${APP_DIR}; then
+                SIGN_OK=true
+                break
+            fi
+        else
+            if codesign --force --deep --sign - --entitlements Tempo/Tempo.entitlements ${APP_DIR}; then
+                SIGN_OK=true
+                break
+            fi
+        fi
+        echo "⚠️  Signing attempt ${attempt} failed (timestamp server unreachable?), retrying in 3s..."
+        sleep 3
+    done
+    if [ "$SIGN_OK" = false ]; then
+        echo "❌ Signing failed after 3 attempts."
+        exit 1
+    fi
 
-echo "🔍 Verifying Signature..."
-codesign --verify --deep --strict build/${APP_NAME}.app
+    echo "🔍 Verifying..."
+    codesign --verify --deep --strict ${APP_DIR}
 
-echo "🧼 Removing quarantine attribute..."
-xattr -cr build/${APP_NAME}.app
+    echo "🗜️ Creating ZIP..."
+    local ZIP_NAME="${APP_NAME}_${SUFFIX}.zip"
+    ditto -ck --rsrc --sequesterRsrc --keepParent ${APP_DIR} ${ZIP_NAME}
+    echo "✅ ZIP: ${ZIP_NAME}"
 
-echo "💿 Creating DMG..."
-# Stage DMG contents with Applications symlink for drag-to-install
-mkdir -p build/dmg_staging
-rm -rf build/dmg_staging/*
-cp -R build/${APP_NAME}.app build/dmg_staging/
-ln -sf /Applications build/dmg_staging/Applications
+    echo "📂 Preparing DMG..."
+    mkdir -p ${DMG_DIR}
+    cp -R ${APP_DIR} ${DMG_DIR}/
+    ln -s /Applications ${DMG_DIR}/Applications
 
-hdiutil create \
-  -volname "${APP_NAME}" \
-  -srcfolder build/dmg_staging \
-  -ov \
-  -format UDZO \
-  build/${APP_NAME}_Release.dmg
+    echo "💿 Creating DMG..."
+    hdiutil create \
+      -volname "${APP_NAME} ${SUFFIX}" \
+      -srcfolder ${DMG_DIR} \
+      -ov \
+      -format UDZO \
+      ${DMG_NAME}
 
-rm -rf build/dmg_staging
+    echo "🔏 Signing DMG..."
+    if [ -n "$SIGN_IDENTITY" ]; then
+        codesign \
+          --force \
+          --sign "${SIGN_IDENTITY}" \
+          ${DMG_NAME}
+    else
+        codesign --force --sign - ${DMG_NAME}
+    fi
 
-echo "📤 Notarizing DMG..."
-if [ -n "$NOTARY_PROFILE" ]; then
-    xcrun notarytool submit build/${APP_NAME}_Release.dmg \
-      --keychain-profile "${NOTARY_PROFILE}" \
-      --wait
+    echo "📤 Notarizing DMG..."
+    if [ -n "$NOTARY_PROFILE" ]; then
+        if xcrun notarytool submit ${DMG_NAME} \
+          --keychain-profile "${NOTARY_PROFILE}" \
+          --wait; then
+            echo "📎 Stapling DMG..."
+            xcrun stapler staple ${DMG_NAME}
+        else
+            echo "⚠️  Notarization failed. Continuing build without notarization."
+        fi
+    else
+        echo "⚠️  Skipping Notarization because NOTARY_PROFILE is not set."
+    fi
 
-    echo "📎 Stapling DMG..."
-    xcrun stapler staple build/${APP_NAME}_Release.dmg
-else
-    echo "⚠️  Skipping Notarization because NOTARY_PROFILE is not set."
-fi
+    echo "🧼 Removing quarantine from DMG..."
+    xattr -cr ${DMG_NAME}
 
-echo "🧼 Removing quarantine from DMG..."
-xattr -cr build/${APP_NAME}_Release.dmg
+    echo "🧼 Cleanup..."
+    rm -rf ${DMG_DIR}
+    
+    echo "✅ Finished ${SUFFIX}: ${DMG_NAME}"
+}
+
+package_app "${BUILD_DIR}/${APP_NAME}_arm64" "Silicon"
+package_app "${BUILD_DIR}/${APP_NAME}_x86_64" "Intel"
 
 echo ""
-echo "✅ BUILD COMPLETE"
-echo "DMG: build/${APP_NAME}_Release.dmg"
+echo "🎉 ALL BUILDS COMPLETE"
