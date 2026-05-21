@@ -13,6 +13,11 @@ class UpdateService {
     private var pendingReleaseURL: URL?
 
     func checkOnLaunchIfNeeded() {
+        let autoCheck = UserDefaults.standard.object(forKey: "tempoAutoCheckForUpdates") as? Bool ?? true
+        guard autoCheck else {
+            print("[UpdateService] Skip check on launch — auto update check is disabled")
+            return
+        }
         if let lastCheck = UserDefaults.standard.object(forKey: lastCheckKey) as? Date,
            Date().timeIntervalSince(lastCheck) < 86400 {
             let hoursAgo = Date().timeIntervalSince(lastCheck) / 3600

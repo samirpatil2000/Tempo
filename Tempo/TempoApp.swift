@@ -31,6 +31,10 @@ struct TempoApp: App {
                 }
             }
         }
+
+        Settings {
+            SettingsView()
+        }
     }
     
     // MARK: - URL Handling
