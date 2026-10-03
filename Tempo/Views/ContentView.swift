@@ -7,7 +7,7 @@ struct ContentView: View {
         VStack(spacing: 0) {
             // Draggable header area (since title bar is hidden)
             header
-                .padding(.bottom, 20)
+                .padding(.bottom, 12)
             
             // Mode toggle
             OutlineSegmentedControl(
@@ -15,10 +15,10 @@ struct ContentView: View {
                 selection: $appState.mode,
                 label: \.rawValue
             )
-            .padding(.bottom, 20)
+            .padding(.bottom, 14)
             
             // Main content — fills available space, no scrolling
-            VStack(spacing: 28) {
+            VStack(spacing: 16) {
                 switch appState.mode {
                 case .video:
                     videoContent
@@ -27,7 +27,7 @@ struct ContentView: View {
                     imageContent
                 }
                 
-                Spacer(minLength: 0)
+                Spacer(minLength: 8)
                 
                 switch appState.mode {
                 case .video:
@@ -39,10 +39,10 @@ struct ContentView: View {
             }
             .transition(.opacity)
         }
-        .padding(.top, 44)       // Clear the traffic-light buttons on hidden title bar
-        .padding(.horizontal, 32)
-        .padding(.bottom, 32)
-        .frame(minWidth: 420, idealWidth: 480, minHeight: 580, idealHeight: 680)
+        .padding(.top, 40)       // Clear the traffic-light buttons on hidden title bar
+        .padding(.horizontal, 28)
+        .padding(.bottom, 20)
+        .frame(minWidth: 440, idealWidth: 480, minHeight: 600, idealHeight: 680)
         .background(AppColors.windowBackground)
         .animation(AppAnimations.smooth, value: appState.mode)
         .handlesExternalEvents(preferring: Set(arrayLiteral: "*"), allowing: Set(arrayLiteral: "*"))
@@ -51,7 +51,7 @@ struct ContentView: View {
     // MARK: - Video Content
     
     private var videoContent: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 16) {
             DropZoneView()
             
             if appState.videoInfo != nil {

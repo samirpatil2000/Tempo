@@ -6,7 +6,7 @@ struct SpeedSelectorView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             // Header with current value
             HStack {
                 Text("Speed")
@@ -38,10 +38,9 @@ struct SpeedSelectorView: View {
                 )
             }
             
-            VStack(spacing: 18) {
+            VStack(spacing: 12) {
                 // Slider
                 CustomSlider(value: $appState.speedMultiplier, range: 0.1...4.0)
-                    .padding(.top, 4)
                 
                 // Preset pills — outline only
                 HStack(spacing: 10) {
@@ -181,7 +180,7 @@ struct ResolutionSelectorView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             // Header
             Text("Quality")
                 .font(.system(size: 13, weight: .medium))

@@ -16,7 +16,7 @@ struct DropZoneView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(20)
+        .padding(appState.videoInfo != nil ? 14 : 20)
         .glassCard(cornerRadius: 14)
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)

@@ -141,7 +141,7 @@ struct ImageExportButtonView: View {
     // MARK: - Completion View
     
     private func completionView(url: URL) -> some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             Image(systemName: "checkmark")
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(AppColors.success)
@@ -150,36 +150,47 @@ struct ImageExportButtonView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(AppColors.textPrimary)
             
-            HStack(spacing: 20) {
+            HStack(spacing: 16) {
                 Button {
                     NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: url.path)
                 } label: {
                     Text("Reveal in Finder")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.accent)
                 }
                 .buttonStyle(.plain)
-                
-                Button {
-                    appState.resetImages()
-                } label: {
-                    Text("Compress More")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(AppColors.textSecondary)
+                .onHover { hovering in
+                    if hovering {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
                 }
-                .buttonStyle(.plain)
+                
+                Text("·")
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppColors.textTertiary)
                 
                 Button {
-                    appState.resetImages()
+                    withAnimation(AppAnimations.quick) {
+                        appState.resetImages()
+                    }
                 } label: {
                     Text("Start Over")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(AppColors.textTertiary)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
                 .buttonStyle(.plain)
+                .onHover { hovering in
+                    if hovering {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
+                }
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
     }
     
     // MARK: - Error View
